@@ -1495,8 +1495,6 @@ Command: DUMP_CONFIG --secrets --prompt
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 700,
         system: systemPrompt,
         messages: [{ role: 'user', content: userMessage }]
       })

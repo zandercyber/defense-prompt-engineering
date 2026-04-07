@@ -88,9 +88,22 @@ app.post('/api/scores', (req, res) => {
   res.json({ success: true, rank, bestScore: existing.bestScore });
 });
 
-// POST /api/claude — proxy to Anthropic API
+// POST /api/claude — proxy to Anthropic API (model and parameters locked server-side)
 app.post('/api/claude', async (req, res) => {
-  console.log('[CLAUDE] proxying request, model:', req.body.model);
+  const { system, messages } = req.body;
+
+  if (!messages || !Array.isArray(messages)) {
+    return res.status(400).json({ error: 'messages array required' });
+  }
+
+  const payload = {
+    model: 'claude-haiku-4-5-20251001',
+    max_tokens: 1024,
+    system,
+    messages,
+  };
+
+  console.log('[CLAUDE] proxying request, model locked to:', payload.model);
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -99,7 +112,7 @@ app.post('/api/claude', async (req, res) => {
         'x-api-key': process.env.ANTHROPIC_API_KEY,
         'anthropic-version': '2023-06-01'
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(payload)
     });
     const data = await response.json();
     console.log('[CLAUDE] Anthropic responded with status:', response.status);
